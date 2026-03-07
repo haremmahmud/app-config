@@ -33,7 +33,7 @@ jobs:
 
       # ٤. دانانی Android SDK
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
 
       # ٥. دانانی Python (بۆ گۆڕینی فایلەکان)
       - name: Set up Python
@@ -82,31 +82,36 @@ jobs:
                   resized = img.resize((size, size), Image.LANCZOS)
                   resized.save(out_path, 'PNG')
               else:
-                  # لۆگۆی پێشوەخت — ئەگەر نەبوو شێوەیەکی ئەمەیە
-                  from PIL import ImageDraw, ImageFont
+                  from PIL import ImageDraw
                   ic = Image.new('RGBA', (size, size), (255, 153, 0, 255))
                   draw = ImageDraw.Draw(ic)
                   letter = store_name[0].upper() if store_name else 'R'
-                  fs = int(size * 0.5)
                   try:
                       draw.text((size//2, size//2), letter, fill='white', anchor='mm')
                   except:
                       draw.text((size//4, size//4), letter, fill='white')
                   ic.save(out_path, 'PNG')
               print(f"Saved {out_path} ({size}x{size})")
-
           PYEOF
 
-      # ٧. گۆڕینی MainActivity.java بۆ ئادرەسی فرۆشگاکە
+      # ٧. گۆڕینی MainActivity.java — بە دۆزینەوەی ئۆتۆماتیکی ئادرەس
       - name: Patch MainActivity.java
         run: |
           python3 << 'PYEOF'
-          import os, re
+          import os, re, glob
 
           slug      = os.environ['STORE_SLUG']
           store_url = os.environ['STORE_URL']
 
-          java_path = 'app/src/main/java/com/reshop/v4/MainActivity.java'
+          # دۆزینەوەی ئۆتۆماتیکی فایلی MainActivity.java لە هەر ئادرەسێکدا
+          matches = glob.glob('app/src/main/java/**/MainActivity.java', recursive=True)
+          if not matches:
+              print("ERROR: MainActivity.java not found anywhere!")
+              exit(1)
+
+          java_path = matches[0]
+          print(f"Found MainActivity at: {java_path}")
+
           code = open(java_path, encoding='utf-8').read()
 
           # گۆڕینی CONFIG_URL
@@ -125,6 +130,8 @@ jobs:
           open(java_path, 'w', encoding='utf-8').write(code)
           print(f"Patched MainActivity for store: {slug}")
           PYEOF
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       # ٨. گۆڕینی strings.xml — ناوی ئەپ
       - name: Patch strings.xml
@@ -133,13 +140,12 @@ jobs:
           import os
 
           store_name = os.environ['STORE_NAME']
-          # پاکردنەوەی کاراکتەری تایبەت
           safe_name = store_name.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '\\"')
 
           xml = f'''<resources>
-          \t<string name="app_name" translatable="false">{safe_name}</string>
-          </resources>
-          '''
+\t<string name="app_name" translatable="false">{safe_name}</string>
+</resources>
+'''
           path = 'app/src/main/res/values/strings.xml'
           open(path, 'w', encoding='utf-8').write(xml)
           print(f"App name set to: {store_name}")
@@ -152,7 +158,6 @@ jobs:
           import os, re
 
           pkg  = os.environ['PACKAGE_NAME']
-          slug = os.environ['STORE_SLUG']
 
           path = 'app/src/main/AndroidManifest.xml'
           code = open(path, encoding='utf-8').read()
@@ -161,14 +166,13 @@ jobs:
           print(f"Package: {pkg}")
           PYEOF
 
-      # ١٠. گۆڕینی build.gradle — package name + version
+      # ١٠. گۆڕینی build.gradle — package name
       - name: Patch build.gradle
         run: |
           python3 << 'PYEOF'
           import os, re
 
           pkg  = os.environ['PACKAGE_NAME']
-          slug = os.environ['STORE_SLUG']
 
           path = 'app/build.gradle'
           code = open(path, encoding='utf-8').read()
@@ -208,7 +212,6 @@ jobs:
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
           echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
 
-          # دروستکردنی keystore ئەگەر نەبوو
           if [ ! -f keystore.jks ]; then
             keytool -genkeypair -v \
               -keystore keystore.jks \
@@ -221,7 +224,6 @@ jobs:
               -noprompt
           fi
 
-          # واژوو
           jarsigner -verbose \
             -sigalg SHA256withRSA \
             -digestalg SHA-256 \
@@ -230,7 +232,6 @@ jobs:
             -keypass reshop2026 \
             "$APK_PATH" reshop_key
 
-          # ئامادەکردنی ناوی فایل
           FINAL_APK="reshop_${{ env.STORE_SLUG }}.apk"
           cp "$APK_PATH" "$FINAL_APK"
           echo "FINAL_APK=$FINAL_APK" >> $GITHUB_ENV
