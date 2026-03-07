@@ -1,0 +1,295 @@
+name: Build Store APK
+
+on:
+  repository_dispatch:
+    types: [build-store-apk]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ١. وەرگرتنی زانیارییەکان لە payload
+      - name: Extract Store Info
+        run: |
+          echo "STORE_SLUG=${{ github.event.client_payload.slug }}"           >> $GITHUB_ENV
+          echo "STORE_NAME=${{ github.event.client_payload.store_name }}"     >> $GITHUB_ENV
+          echo "STORE_URL=${{ github.event.client_payload.store_url }}"       >> $GITHUB_ENV
+          echo "LOGO_URL=${{ github.event.client_payload.logo_url }}"         >> $GITHUB_ENV
+          echo "PRIMARY_COLOR=${{ github.event.client_payload.primary_color }}" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=com.reshop.${{ github.event.client_payload.slug }}" >> $GITHUB_ENV
+
+      # ٢. کلۆن کردنی کۆد
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # ٣. دانانی Java 11
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      # ٤. دانانی Android SDK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      # ٥. دانانی Python (بۆ گۆڕینی فایلەکان)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Python deps
+        run: pip install Pillow requests
+
+      # ٦. داونڵۆدی لۆگۆ و ئامادەکردنی وێنەکان
+      - name: Download & Prepare Logo
+        run: |
+          python3 << 'PYEOF'
+          import requests, os, sys
+          from PIL import Image
+          import io
+
+          logo_url = os.environ.get('LOGO_URL', '').strip()
+          store_name = os.environ.get('STORE_NAME', 'ReShop')
+
+          sizes = {
+              'drawable-mdpi':    48,
+              'drawable-hdpi':    72,
+              'drawable-xhdpi':   96,
+              'drawable-xxhdpi':  144,
+              'drawable-xxxhdpi': 192,
+          }
+
+          if logo_url and logo_url.startswith('http'):
+              try:
+                  r = requests.get(logo_url, timeout=15)
+                  img = Image.open(io.BytesIO(r.content)).convert('RGBA')
+                  print(f"Logo downloaded: {img.size}")
+              except Exception as e:
+                  print(f"Logo download failed: {e}, using default")
+                  img = None
+          else:
+              img = None
+
+          base_path = 'app/src/main/res'
+          for folder, size in sizes.items():
+              os.makedirs(f'{base_path}/{folder}', exist_ok=True)
+              out_path = f'{base_path}/{folder}/app_icon.png'
+              if img:
+                  resized = img.resize((size, size), Image.LANCZOS)
+                  resized.save(out_path, 'PNG')
+              else:
+                  # لۆگۆی پێشوەخت — ئەگەر نەبوو شێوەیەکی ئەمەیە
+                  from PIL import ImageDraw, ImageFont
+                  ic = Image.new('RGBA', (size, size), (255, 153, 0, 255))
+                  draw = ImageDraw.Draw(ic)
+                  letter = store_name[0].upper() if store_name else 'R'
+                  fs = int(size * 0.5)
+                  try:
+                      draw.text((size//2, size//2), letter, fill='white', anchor='mm')
+                  except:
+                      draw.text((size//4, size//4), letter, fill='white')
+                  ic.save(out_path, 'PNG')
+              print(f"Saved {out_path} ({size}x{size})")
+
+          PYEOF
+
+      # ٧. گۆڕینی MainActivity.java بۆ ئادرەسی فرۆشگاکە
+      - name: Patch MainActivity.java
+        run: |
+          python3 << 'PYEOF'
+          import os, re
+
+          slug      = os.environ['STORE_SLUG']
+          store_url = os.environ['STORE_URL']
+
+          java_path = 'app/src/main/java/com/reshop/v4/MainActivity.java'
+          code = open(java_path, encoding='utf-8').read()
+
+          # گۆڕینی CONFIG_URL
+          code = re.sub(
+              r'private static final String CONFIG_URL\s*=\s*"[^"]*";',
+              f'private static final String CONFIG_URL = "https://raw.githubusercontent.com/{os.environ["GITHUB_REPOSITORY"]}/main/stores/{slug}/config.json";',
+              code
+          )
+          # گۆڕینی FALLBACK_URL
+          code = re.sub(
+              r'private static final String FALLBACK_URL\s*=\s*"[^"]*";',
+              f'private static final String FALLBACK_URL = "{store_url}";',
+              code
+          )
+
+          open(java_path, 'w', encoding='utf-8').write(code)
+          print(f"Patched MainActivity for store: {slug}")
+          PYEOF
+
+      # ٨. گۆڕینی strings.xml — ناوی ئەپ
+      - name: Patch strings.xml
+        run: |
+          python3 << 'PYEOF'
+          import os
+
+          store_name = os.environ['STORE_NAME']
+          # پاکردنەوەی کاراکتەری تایبەت
+          safe_name = store_name.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '\\"')
+
+          xml = f'''<resources>
+          \t<string name="app_name" translatable="false">{safe_name}</string>
+          </resources>
+          '''
+          path = 'app/src/main/res/values/strings.xml'
+          open(path, 'w', encoding='utf-8').write(xml)
+          print(f"App name set to: {store_name}")
+          PYEOF
+
+      # ٩. گۆڕینی AndroidManifest.xml — package name
+      - name: Patch AndroidManifest.xml
+        run: |
+          python3 << 'PYEOF'
+          import os, re
+
+          pkg  = os.environ['PACKAGE_NAME']
+          slug = os.environ['STORE_SLUG']
+
+          path = 'app/src/main/AndroidManifest.xml'
+          code = open(path, encoding='utf-8').read()
+          code = re.sub(r'package="[^"]*"', f'package="{pkg}"', code)
+          open(path, 'w', encoding='utf-8').write(code)
+          print(f"Package: {pkg}")
+          PYEOF
+
+      # ١٠. گۆڕینی build.gradle — package name + version
+      - name: Patch build.gradle
+        run: |
+          python3 << 'PYEOF'
+          import os, re
+
+          pkg  = os.environ['PACKAGE_NAME']
+          slug = os.environ['STORE_SLUG']
+
+          path = 'app/build.gradle'
+          code = open(path, encoding='utf-8').read()
+          code = re.sub(r'applicationId\s+"[^"]*"', f'applicationId "{pkg}"', code)
+          open(path, 'w', encoding='utf-8').write(code)
+          print(f"build.gradle patched: {pkg}")
+          PYEOF
+
+      # ١١. دروستکردنی config.json بۆ ئەم فرۆشگایە
+      - name: Create Store Config JSON
+        run: |
+          mkdir -p stores/${{ env.STORE_SLUG }}
+          cat > stores/${{ env.STORE_SLUG }}/config.json << JSONEOF
+          {
+            "store_url": "${{ env.STORE_URL }}",
+            "store_name": "${{ env.STORE_NAME }}",
+            "slug": "${{ env.STORE_SLUG }}",
+            "package": "${{ env.PACKAGE_NAME }}",
+            "built_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          JSONEOF
+          echo "config.json created for ${{ env.STORE_SLUG }}"
+
+      # ١٢. دانانی پێداچوونەوەی gradle
+      - name: Grant Gradle Permission
+        run: chmod +x gradlew
+
+      # ١٣. ساختنی APK
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      # ١٤. واژووکردنی APK (debug key)
+      - name: Sign APK
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
+
+          # دروستکردنی keystore ئەگەر نەبوو
+          if [ ! -f keystore.jks ]; then
+            keytool -genkeypair -v \
+              -keystore keystore.jks \
+              -alias reshop_key \
+              -keyalg RSA -keysize 2048 \
+              -validity 10000 \
+              -storepass reshop2026 \
+              -keypass reshop2026 \
+              -dname "CN=ReShop, OU=App, O=ReShop, L=Erbil, S=Kurdistan, C=IQ" \
+              -noprompt
+          fi
+
+          # واژوو
+          jarsigner -verbose \
+            -sigalg SHA256withRSA \
+            -digestalg SHA-256 \
+            -keystore keystore.jks \
+            -storepass reshop2026 \
+            -keypass reshop2026 \
+            "$APK_PATH" reshop_key
+
+          # ئامادەکردنی ناوی فایل
+          FINAL_APK="reshop_${{ env.STORE_SLUG }}.apk"
+          cp "$APK_PATH" "$FINAL_APK"
+          echo "FINAL_APK=$FINAL_APK" >> $GITHUB_ENV
+          echo "APK signed: $FINAL_APK"
+
+      # ١٥. commit کردنی config.json بۆ repo
+      - name: Commit Store Config
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stores/${{ env.STORE_SLUG }}/config.json
+          git diff --staged --quiet || git commit -m "Add config for store: ${{ env.STORE_SLUG }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ١٦. ئەپڵۆدی APK بۆ GitHub Release
+      - name: Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "store-${{ env.STORE_SLUG }}-v1"
+          name: "ئەپی فرۆشگا: ${{ env.STORE_NAME }}"
+          body: |
+            📱 ئەپی فرۆشگای **${{ env.STORE_NAME }}**
+            🔗 لینک: ${{ env.STORE_URL }}
+            📦 پاکێج: ${{ env.PACKAGE_NAME }}
+          files: ${{ env.FINAL_APK }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ١٧. ناردنی لینکی APK بۆ سایتەکە
+      - name: Send APK URL back to site
+        run: |
+          python3 << 'PYEOF'
+          import requests, os
+
+          repo    = os.environ['GITHUB_REPOSITORY']
+          slug    = os.environ['STORE_SLUG']
+          tag     = f"store-{slug}-v1"
+          apk_url = f"https://github.com/{repo}/releases/download/{tag}/reshop_{slug}.apk"
+
+          callback = os.environ.get('CALLBACK_URL', '')
+          secret   = os.environ.get('RESHOP_CALLBACK_SECRET', '')
+
+          if callback:
+              try:
+                  r = requests.post(callback, json={
+                      'secret': secret,
+                      'slug': slug,
+                      'apk_url': apk_url,
+                  }, timeout=15)
+                  print(f"Callback: {r.status_code} — {r.text[:200]}")
+              except Exception as e:
+                  print(f"Callback failed: {e}")
+          else:
+              print(f"No callback URL. APK URL: {apk_url}")
+          PYEOF
+        env:
+          CALLBACK_URL: ${{ secrets.RESHOP_CALLBACK_URL }}
+          RESHOP_CALLBACK_SECRET: ${{ secrets.RESHOP_CALLBACK_SECRET }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
