@@ -89,18 +89,18 @@ jobs:
             "${{ env.STORE_URL }}" "${{ env.STORE_NAME }}" "${{ env.STORE_SLUG }}" "${{ env.PACKAGE_NAME }}" \
             > stores/${{ env.STORE_SLUG }}/config.json
 
-      - name: Grant Gradle Permission
-        run: chmod +x gradlew
-
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: gradle assembleRelease --no-daemon --stacktrace
 
       - name: Sign and Finalize APK
         run: |
           APK_PATH=$(find . -name "*.apk" | grep "release" | head -1)
+          if [ -z "$APK_PATH" ]; then echo "APK not found"; exit 1; fi
+          
           if [ ! -f keystore.jks ]; then
             keytool -genkeypair -v -keystore keystore.jks -alias reshop_key -keyalg RSA -keysize 2048 -validity 10000 -storepass reshop2026 -keypass reshop2026 -dname "CN=ReShop, OU=App, O=ReShop, L=Erbil, S=Kurdistan, C=IQ" -noprompt
           fi
+          
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass reshop2026 -keypass reshop2026 "$APK_PATH" reshop_key
           cp "$APK_PATH" "reshop_${{ env.STORE_SLUG }}.apk"
           echo "FINAL_APK=reshop_${{ env.STORE_SLUG }}.apk" >> $GITHUB_ENV
