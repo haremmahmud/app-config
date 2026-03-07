@@ -10,32 +10,27 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # ١. وەرگرتنی زانیارییەکان لە payload
       - name: Extract Store Info
         run: |
-          echo "STORE_SLUG=${{ github.event.client_payload.slug }}"           >> $GITHUB_ENV
-          echo "STORE_NAME=${{ github.event.client_payload.store_name }}"     >> $GITHUB_ENV
-          echo "STORE_URL=${{ github.event.client_payload.store_url }}"       >> $GITHUB_ENV
-          echo "LOGO_URL=${{ github.event.client_payload.logo_url }}"         >> $GITHUB_ENV
+          echo "STORE_SLUG=${{ github.event.client_payload.slug }}" >> $GITHUB_ENV
+          echo "STORE_NAME=${{ github.event.client_payload.store_name }}" >> $GITHUB_ENV
+          echo "STORE_URL=${{ github.event.client_payload.store_url }}" >> $GITHUB_ENV
+          echo "LOGO_URL=${{ github.event.client_payload.logo_url }}" >> $GITHUB_ENV
           echo "PRIMARY_COLOR=${{ github.event.client_payload.primary_color }}" >> $GITHUB_ENV
           echo "PACKAGE_NAME=com.reshop.${{ github.event.client_payload.slug }}" >> $GITHUB_ENV
 
-      # ٢. کلۆن کردنی کۆد
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # ٣. دانانی Java 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # ٤. دانانی Android SDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # ٥. دانانی Python (بۆ گۆڕینی فایلەکان)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -44,169 +39,46 @@ jobs:
       - name: Install Python deps
         run: pip install Pillow requests
 
-      # ٦. داونڵۆدی لۆگۆ و ئامادەکردنی وێنەکان
-      - name: Download & Prepare Logo
+      - name: Download and Prepare Logo
         run: |
-          python3 << 'PYEOF'
-          import requests, os, sys
-          from PIL import Image
-          import io
+          echo "aW1wb3J0IHJlcXVlc3RzLCBvcwpmcm9tIFBJTCBpbXBvcnQgSW1hZ2UsIEltYWdlRHJhdwppbXBvcnQgaW8KCmxvZ29fdXJsICAgPSBvcy5lbnZpcm9uLmdldCgiTE9HT19VUkwiLCAiIikuc3RyaXAoKQpzdG9yZV9uYW1lID0gb3MuZW52aXJvbi5nZXQoIlNUT1JFX05BTUUiLCAiUmVTaG9wIikKCnNpemVzID0geyJkcmF3YWJsZS1tZHBpIjo0OCwiZHJhd2FibGUtaGRwaSI6NzIsImRyYXdhYmxlLXhoZHBpIjo5NiwiZHJhd2FibGUteHhoZHBpIjoxNDQsImRyYXdhYmxlLXh4eGhkcGkiOjE5Mn0KCmltZyA9IE5vbmUKaWYgbG9nb191cmwgYW5kIGxvZ29fdXJsLnN0YXJ0c3dpdGgoImh0dHAiKToKICAgIHRyeToKICAgICAgICByID0gcmVxdWVzdHMuZ2V0KGxvZ29fdXJsLCB0aW1lb3V0PTE1KQogICAgICAgIGltZyA9IEltYWdlLm9wZW4oaW8uQnl0ZXNJTyhyLmNvbnRlbnQpKS5jb252ZXJ0KCJSR0JBIikKICAgICAgICBwcmludCgiTG9nbyBkb3dubG9hZGVkOiIsIGltZy5zaXplKQogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgICAgIHByaW50KCJMb2dvIGRvd25sb2FkIGZhaWxlZDoiLCBlKQoKYmFzZV9wYXRoID0gImFwcC9zcmMvbWFpbi9yZXMiCmZvciBmb2xkZXIsIHNpemUgaW4gc2l6ZXMuaXRlbXMoKToKICAgIG9zLm1ha2VkaXJzKGYie2Jhc2VfcGF0aH0ve2ZvbGRlcn0iLCBleGlzdF9vaz1UcnVlKQogICAgb3V0X3BhdGggPSBmIntiYXNlX3BhdGh9L3tmb2xkZXJ9L2FwcF9pY29uLnBuZyIKICAgIGlmIGltZzoKICAgICAgICBpbWcucmVzaXplKChzaXplLCBzaXplKSwgSW1hZ2UuTEFOQ1pPUykuc2F2ZShvdXRfcGF0aCwgIlBORyIpCiAgICBlbHNlOgogICAgICAgIGljID0gSW1hZ2UubmV3KCJSR0JBIiwgKHNpemUsIHNpemUpLCAoMjU1LCAxNTMsIDAsIDI1NSkpCiAgICAgICAgZHJhdyA9IEltYWdlRHJhdy5EcmF3KGljKQogICAgICAgIGxldHRlciA9IHN0b3JlX25hbWVbMF0udXBwZXIoKSBpZiBzdG9yZV9uYW1lIGVsc2UgIlIiCiAgICAgICAgdHJ5OgogICAgICAgICAgICBkcmF3LnRleHQoKHNpemUvLzIsIHNpemUvLzIpLCBsZXR0ZXIsIGZpbGw9IndoaXRlIiwgYW5jaG9yPSJtbSIpCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICAgICAgZHJhdy50ZXh0KChzaXplLy80LCBzaXplLy80KSwgbGV0dGVyLCBmaWxsPSJ3aGl0ZSIpCiAgICAgICAgaWMuc2F2ZShvdXRfcGF0aCwgIlBORyIpCiAgICBwcmludChmIlNhdmVkIHtvdXRfcGF0aH0gKHtzaXplfXh7c2l6ZX0pIikK" | base64 -d > /tmp/s.py
+          python3 /tmp/s.py
 
-          logo_url = os.environ.get('LOGO_URL', '').strip()
-          store_name = os.environ.get('STORE_NAME', 'ReShop')
-
-          sizes = {
-              'drawable-mdpi':    48,
-              'drawable-hdpi':    72,
-              'drawable-xhdpi':   96,
-              'drawable-xxhdpi':  144,
-              'drawable-xxxhdpi': 192,
-          }
-
-          if logo_url and logo_url.startswith('http'):
-              try:
-                  r = requests.get(logo_url, timeout=15)
-                  img = Image.open(io.BytesIO(r.content)).convert('RGBA')
-                  print(f"Logo downloaded: {img.size}")
-              except Exception as e:
-                  print(f"Logo download failed: {e}, using default")
-                  img = None
-          else:
-              img = None
-
-          base_path = 'app/src/main/res'
-          for folder, size in sizes.items():
-              os.makedirs(f'{base_path}/{folder}', exist_ok=True)
-              out_path = f'{base_path}/{folder}/app_icon.png'
-              if img:
-                  resized = img.resize((size, size), Image.LANCZOS)
-                  resized.save(out_path, 'PNG')
-              else:
-                  from PIL import ImageDraw
-                  ic = Image.new('RGBA', (size, size), (255, 153, 0, 255))
-                  draw = ImageDraw.Draw(ic)
-                  letter = store_name[0].upper() if store_name else 'R'
-                  try:
-                      draw.text((size//2, size//2), letter, fill='white', anchor='mm')
-                  except:
-                      draw.text((size//4, size//4), letter, fill='white')
-                  ic.save(out_path, 'PNG')
-              print(f"Saved {out_path} ({size}x{size})")
-          PYEOF
-
-      # ٧. گۆڕینی MainActivity.java — بە دۆزینەوەی ئۆتۆماتیکی ئادرەس
       - name: Patch MainActivity.java
-        run: |
-          python3 << 'PYEOF'
-          import os, re, glob
-
-          slug      = os.environ['STORE_SLUG']
-          store_url = os.environ['STORE_URL']
-
-          # دۆزینەوەی ئۆتۆماتیکی فایلی MainActivity.java لە هەر ئادرەسێکدا
-          matches = glob.glob('app/src/main/java/**/MainActivity.java', recursive=True)
-          if not matches:
-              print("ERROR: MainActivity.java not found anywhere!")
-              exit(1)
-
-          java_path = matches[0]
-          print(f"Found MainActivity at: {java_path}")
-
-          code = open(java_path, encoding='utf-8').read()
-
-          # گۆڕینی CONFIG_URL
-          code = re.sub(
-              r'private static final String CONFIG_URL\s*=\s*"[^"]*";',
-              f'private static final String CONFIG_URL = "https://raw.githubusercontent.com/{os.environ["GITHUB_REPOSITORY"]}/main/stores/{slug}/config.json";',
-              code
-          )
-          # گۆڕینی FALLBACK_URL
-          code = re.sub(
-              r'private static final String FALLBACK_URL\s*=\s*"[^"]*";',
-              f'private static final String FALLBACK_URL = "{store_url}";',
-              code
-          )
-
-          open(java_path, 'w', encoding='utf-8').write(code)
-          print(f"Patched MainActivity for store: {slug}")
-          PYEOF
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "aW1wb3J0IG9zLCByZSwgZ2xvYgoKc2x1ZyAgICAgID0gb3MuZW52aXJvblsiU1RPUkVfU0xVRyJdCnN0b3JlX3VybCA9IG9zLmVudmlyb25bIlNUT1JFX1VSTCJdCnJlcG8gICAgICA9IG9zLmVudmlyb25bIkdJVEhVQl9SRVBPU0lUT1JZIl0KCm1hdGNoZXMgPSBnbG9iLmdsb2IoImFwcC9zcmMvbWFpbi9qYXZhLyoqL01haW5BY3Rpdml0eS5qYXZhIiwgcmVjdXJzaXZlPVRydWUpCmlmIG5vdCBtYXRjaGVzOgogICAgcHJpbnQoIkVSUk9SOiBNYWluQWN0aXZpdHkuamF2YSBub3QgZm91bmQhIikKICAgIGV4aXQoMSkKCmphdmFfcGF0aCA9IG1hdGNoZXNbMF0KcHJpbnQoIkZvdW5kOiIsIGphdmFfcGF0aCkKY29kZSA9IG9wZW4oamF2YV9wYXRoLCBlbmNvZGluZz0idXRmLTgiKS5yZWFkKCkKCmNvZGUgPSByZS5zdWIoCiAgICByJ3ByaXZhdGUgc3RhdGljIGZpbmFsIFN0cmluZyBDT05GSUdfVVJMXHMqPVxzKiJbXiJdKiI7JywKICAgIGYncHJpdmF0ZSBzdGF0aWMgZmluYWwgU3RyaW5nIENPTkZJR19VUkwgPSAiaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3tyZXBvfS9tYWluL3N0b3Jlcy97c2x1Z30vY29uZmlnLmpzb24iOycsCiAgICBjb2RlCikKY29kZSA9IHJlLnN1YigKICAgIHIncHJpdmF0ZSBzdGF0aWMgZmluYWwgU3RyaW5nIEZBTExCQUNLX1VSTFxzKj1ccyoiW14iXSoiOycsCiAgICBmJ3ByaXZhdGUgc3RhdGljIGZpbmFsIFN0cmluZyBGQUxMQkFDS19VUkwgPSAie3N0b3JlX3VybH0iOycsCiAgICBjb2RlCikKCm9wZW4oamF2YV9wYXRoLCAidyIsIGVuY29kaW5nPSJ1dGYtOCIpLndyaXRlKGNvZGUpCnByaW50KCJQYXRjaGVkIGZvciBzdG9yZToiLCBzbHVnKQo=" | base64 -d > /tmp/s.py
+          python3 /tmp/s.py
 
-      # ٨. گۆڕینی strings.xml — ناوی ئەپ
       - name: Patch strings.xml
         run: |
-          python3 << 'PYEOF'
-          import os
+          echo "aW1wb3J0IG9zCgpzdG9yZV9uYW1lID0gb3MuZW52aXJvblsiU1RPUkVfTkFNRSJdCnNhZmUgPSBzdG9yZV9uYW1lLnJlcGxhY2UoIiYiLCImYW1wOyIpLnJlcGxhY2UoIjwiLCImbHQ7IikucmVwbGFjZSgiPiIsIiZndDsiKS5yZXBsYWNlKCciJywnXFwiJykKeG1sID0gIjxyZXNvdXJjZXM+XG5cdDxzdHJpbmcgbmFtZT1cImFwcF9uYW1lXCIgdHJhbnNsYXRhYmxlPVwiZmFsc2VcIj4iICsgc2FmZSArICI8L3N0cmluZz5cbjwvcmVzb3VyY2VzPlxuIgpvcGVuKCJhcHAvc3JjL21haW4vcmVzL3ZhbHVlcy9zdHJpbmdzLnhtbCIsICJ3IiwgZW5jb2Rpbmc9InV0Zi04Iikud3JpdGUoeG1sKQpwcmludCgiQXBwIG5hbWUgc2V0IHRvOiIsIHN0b3JlX25hbWUpCg==" | base64 -d > /tmp/s.py
+          python3 /tmp/s.py
 
-          store_name = os.environ['STORE_NAME']
-          safe_name = store_name.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '\\"')
-
-          xml = f'''<resources>
-\t<string name="app_name" translatable="false">{safe_name}</string>
-</resources>
-'''
-          path = 'app/src/main/res/values/strings.xml'
-          open(path, 'w', encoding='utf-8').write(xml)
-          print(f"App name set to: {store_name}")
-          PYEOF
-
-      # ٩. گۆڕینی AndroidManifest.xml — package name
       - name: Patch AndroidManifest.xml
         run: |
-          python3 << 'PYEOF'
-          import os, re
+          echo "aW1wb3J0IG9zLCByZQpwa2cgPSBvcy5lbnZpcm9uWyJQQUNLQUdFX05BTUUiXQpwYXRoID0gImFwcC9zcmMvbWFpbi9BbmRyb2lkTWFuaWZlc3QueG1sIgpjb2RlID0gb3BlbihwYXRoLCBlbmNvZGluZz0idXRmLTgiKS5yZWFkKCkKY29kZSA9IHJlLnN1YihyJ3BhY2thZ2U9IlteIl0qIicsIGYncGFja2FnZT0ie3BrZ30iJywgY29kZSkKb3BlbihwYXRoLCAidyIsIGVuY29kaW5nPSJ1dGYtOCIpLndyaXRlKGNvZGUpCnByaW50KCJQYWNrYWdlOiIsIHBrZykK" | base64 -d > /tmp/s.py
+          python3 /tmp/s.py
 
-          pkg  = os.environ['PACKAGE_NAME']
-
-          path = 'app/src/main/AndroidManifest.xml'
-          code = open(path, encoding='utf-8').read()
-          code = re.sub(r'package="[^"]*"', f'package="{pkg}"', code)
-          open(path, 'w', encoding='utf-8').write(code)
-          print(f"Package: {pkg}")
-          PYEOF
-
-      # ١٠. گۆڕینی build.gradle — package name
       - name: Patch build.gradle
         run: |
-          python3 << 'PYEOF'
-          import os, re
+          echo "aW1wb3J0IG9zLCByZQpwa2cgPSBvcy5lbnZpcm9uWyJQQUNLQUdFX05BTUUiXQpwYXRoID0gImFwcC9idWlsZC5ncmFkbGUiCmNvZGUgPSBvcGVuKHBhdGgsIGVuY29kaW5nPSJ1dGYtOCIpLnJlYWQoKQpjb2RlID0gcmUuc3ViKHInYXBwbGljYXRpb25JZFxzKyJbXiJdKiInLCBmJ2FwcGxpY2F0aW9uSWQgIntwa2d9IicsIGNvZGUpCm9wZW4ocGF0aCwgInciLCBlbmNvZGluZz0idXRmLTgiKS53cml0ZShjb2RlKQpwcmludCgiYnVpbGQuZ3JhZGxlIHBhdGNoZWQ6IiwgcGtnKQo=" | base64 -d > /tmp/s.py
+          python3 /tmp/s.py
 
-          pkg  = os.environ['PACKAGE_NAME']
-
-          path = 'app/build.gradle'
-          code = open(path, encoding='utf-8').read()
-          code = re.sub(r'applicationId\s+"[^"]*"', f'applicationId "{pkg}"', code)
-          open(path, 'w', encoding='utf-8').write(code)
-          print(f"build.gradle patched: {pkg}")
-          PYEOF
-
-      # ١١. دروستکردنی config.json بۆ ئەم فرۆشگایە
       - name: Create Store Config JSON
         run: |
           mkdir -p stores/${{ env.STORE_SLUG }}
-          cat > stores/${{ env.STORE_SLUG }}/config.json << JSONEOF
-          {
-            "store_url": "${{ env.STORE_URL }}",
-            "store_name": "${{ env.STORE_NAME }}",
-            "slug": "${{ env.STORE_SLUG }}",
-            "package": "${{ env.PACKAGE_NAME }}",
-            "built_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-          JSONEOF
-          echo "config.json created for ${{ env.STORE_SLUG }}"
+          printf '{\n  "store_url": "%s",\n  "store_name": "%s",\n  "slug": "%s",\n  "package": "%s"\n}\n' \
+            "${{ env.STORE_URL }}" "${{ env.STORE_NAME }}" "${{ env.STORE_SLUG }}" "${{ env.PACKAGE_NAME }}" \
+            > stores/${{ env.STORE_SLUG }}/config.json
 
-      # ١٢. دانانی پێداچوونەوەی gradle
       - name: Grant Gradle Permission
         run: chmod +x gradlew
 
-      # ١٣. ساختنی APK
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      # ١٤. واژووکردنی APK (debug key)
       - name: Sign APK
         run: |
           APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
@@ -235,12 +107,10 @@ jobs:
           FINAL_APK="reshop_${{ env.STORE_SLUG }}.apk"
           cp "$APK_PATH" "$FINAL_APK"
           echo "FINAL_APK=$FINAL_APK" >> $GITHUB_ENV
-          echo "APK signed: $FINAL_APK"
 
-      # ١٥. commit کردنی config.json بۆ repo
       - name: Commit Store Config
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add stores/${{ env.STORE_SLUG }}/config.json
           git diff --staged --quiet || git commit -m "Add config for store: ${{ env.STORE_SLUG }}"
@@ -248,49 +118,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ١٦. ئەپڵۆدی APK بۆ GitHub Release
-      - name: Create GitHub Release & Upload APK
+      - name: Create GitHub Release and Upload APK
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "store-${{ env.STORE_SLUG }}-v1"
-          name: "ئەپی فرۆشگا: ${{ env.STORE_NAME }}"
-          body: |
-            📱 ئەپی فرۆشگای **${{ env.STORE_NAME }}**
-            🔗 لینک: ${{ env.STORE_URL }}
-            📦 پاکێج: ${{ env.PACKAGE_NAME }}
+          name: "Store App - ${{ env.STORE_NAME }}"
+          body: "Store: ${{ env.STORE_NAME }} | URL: ${{ env.STORE_URL }} | Package: ${{ env.PACKAGE_NAME }}"
           files: ${{ env.FINAL_APK }}
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ١٧. ناردنی لینکی APK بۆ سایتەکە
-      - name: Send APK URL back to site
-        run: |
-          python3 << 'PYEOF'
-          import requests, os
-
-          repo    = os.environ['GITHUB_REPOSITORY']
-          slug    = os.environ['STORE_SLUG']
-          tag     = f"store-{slug}-v1"
-          apk_url = f"https://github.com/{repo}/releases/download/{tag}/reshop_{slug}.apk"
-
-          callback = os.environ.get('CALLBACK_URL', '')
-          secret   = os.environ.get('RESHOP_CALLBACK_SECRET', '')
-
-          if callback:
-              try:
-                  r = requests.post(callback, json={
-                      'secret': secret,
-                      'slug': slug,
-                      'apk_url': apk_url,
-                  }, timeout=15)
-                  print(f"Callback: {r.status_code} — {r.text[:200]}")
-              except Exception as e:
-                  print(f"Callback failed: {e}")
-          else:
-              print(f"No callback URL. APK URL: {apk_url}")
-          PYEOF
+      - name: Send APK URL to site
         env:
           CALLBACK_URL: ${{ secrets.RESHOP_CALLBACK_URL }}
           RESHOP_CALLBACK_SECRET: ${{ secrets.RESHOP_CALLBACK_SECRET }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "aW1wb3J0IHJlcXVlc3RzLCBvcwpyZXBvICAgID0gb3MuZW52aXJvblsiR0lUSFVCX1JFUE9TSVRPUlkiXQpzbHVnICAgID0gb3MuZW52aXJvblsiU1RPUkVfU0xVRyJdCnRhZyAgICAgPSBmInN0b3JlLXtzbHVnfS12MSIKYXBrX3VybCA9IGYiaHR0cHM6Ly9naXRodWIuY29tL3tyZXBvfS9yZWxlYXNlcy9kb3dubG9hZC97dGFnfS9yZXNob3Bfe3NsdWd9LmFwayIKY2FsbGJhY2sgPSBvcy5lbnZpcm9uLmdldCgiQ0FMTEJBQ0tfVVJMIiwgIiIpCnNlY3JldCAgID0gb3MuZW52aXJvbi5nZXQoIlJFU0hPUF9DQUxMQkFDS19TRUNSRVQiLCAiIikKaWYgY2FsbGJhY2s6CiAgICB0cnk6CiAgICAgICAgciA9IHJlcXVlc3RzLnBvc3QoY2FsbGJhY2ssIGpzb249eyJzZWNyZXQiOnNlY3JldCwic2x1ZyI6c2x1ZywiYXBrX3VybCI6YXBrX3VybH0sIHRpbWVvdXQ9MTUpCiAgICAgICAgcHJpbnQoIkNhbGxiYWNrOiIsIHIuc3RhdHVzX2NvZGUpCiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgcHJpbnQoIkNhbGxiYWNrIGZhaWxlZDoiLCBlKQplbHNlOgogICAgcHJpbnQoIk5vIGNhbGxiYWNrLiBBUEs6IiwgYXBrX3VybCkK" | base64 -d > /tmp/s.py
+          python3 /tmp/s.py
