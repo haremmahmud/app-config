@@ -24,11 +24,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # ٣. دانانی Java 11
-      - name: Set up JDK 11
+      # ٣. دانانی Java 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
       # ٤. دانانی Android SDK
