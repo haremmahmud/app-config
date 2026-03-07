@@ -16,7 +16,6 @@ jobs:
           echo "STORE_NAME=${{ github.event.client_payload.store_name }}" >> $GITHUB_ENV
           echo "STORE_URL=${{ github.event.client_payload.store_url }}" >> $GITHUB_ENV
           echo "LOGO_URL=${{ github.event.client_payload.logo_url }}" >> $GITHUB_ENV
-          echo "PRIMARY_COLOR=${{ github.event.client_payload.primary_color }}" >> $GITHUB_ENV
           echo "PACKAGE_NAME=com.reshop.${{ github.event.client_payload.slug }}" >> $GITHUB_ENV
 
       - name: Checkout Code
@@ -39,18 +38,49 @@ jobs:
       - name: Install Python deps
         run: pip install Pillow requests
 
-      - name: Download and Prepare Logo
-        run: |
-          echo "aW1wb3J0IHJlcXVlc3RzLCBvcwpmcm9tIFBJTCBpbXBvcnQgSW1hZ2UsIEltYWdlRHJhdwppbXBvcnQgaW8KCmxvZ29fdXJsID0gb3MuZW52aXJvbi5nZXQoIkxPR09fVVJMIiwgIiIpLnN0cmlwKCkKc3RvcmVfbmFtZSA9IG9zLmVudmlyb24uZ2V0KCJTVE9SRV9OQU1FIiwgIlJlU2hvcCIpCnNpemVzID0geyJkcmF3YWJsZS1tZHBpIjo0OCwiZHJhd2FibGUtaGRwaSI6NzIsImRyYXdhYmxlLXhoZHBpIjo5NiwiZHJhd2FibGUteHhoZHBpIjoxNDQsImRyYXdhYmxlLXh4eGhkcGkiOjE5Mn0KaW1nID0gTm9uZQppZiBsb2dvX3VybCBhbmQgbG9nb191cmwuc3RhcnRzd2l0aCgiaHR0cCIpOgogICAgdHJ5OgogICAgICAgIHIgPSByZXF1ZXN0cy5nZXQobG9nb191cmwsIHRpbWVvdXQ9MTUpCiAgICAgICAgaW1nID0gSW1hZ2Uub3Blbihpby5CeXRlc0lPKHIuY29udGVudCkpLmNvbnZlcnQoIlJHQkEiKQogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOiBwcmludChmIkxvZ28gZG93bmxvYWQgZmFpbGVkOiB7ZX0iKQoKYmFzZV9wYXRoID0gImFwcC9zcmMvbWFpbi9yZXMiCmZvciBmb2xkZXIsIHNpemUgaW4gc2l6ZXMuaXRlbXMoKToKICAgIHBhdGggPSBvcy5wYXRoLmpvaW4oYmFzZV9wYXRoLCBmb2xkZXIpCiAgICBvcy5tYWtlZGlycyhwYXRoLCBleGlzdF9vaz1UcnVlKQogICAgb3V0X3BhdGggPSBvcy5wYXRoLmpvaW4ocGF0aCwgImFwcF9pY29uLnBuZyIpCiAgICBpZiBpbWc6CiAgICAgICAgaW1nLnJlc2l6ZSgoc2l6ZSwgc2l6ZSksIEltYWdl.Resampling.LANCZOS).save(out_pathLSwgIlBORyIpCiAgICBlbHNlOgogICAgICAgIGljID0gSW1hZ2UubmV3KCJSR0JBIiwgKHNpemUsIHNpemUpLCAoMjU1LCAxNTMsIDAsIDI1NSkpCiAgICAgICAgZHJhdyA9IEltYWdlRHJhdwpEcmF3KGljKQogICAgICAgIGxldHRlciA9IHN0b3JlX25hbWVbMF0udXBwZXIoKSBpZiBzdG9yZV9uYW1lIGVsc2UgIlIiCiAgICAgICAgZHJhdy50ZXh0KChzaXplLy8yLCBzaXplLy8yKSwgbGV0dGVyLCBmaWxsPSJ3aGl0ZSIpCiAgICAgICAgaWMuc2F2ZShvdXRfcGF0aCwgIlBORyIp" | base64 -d > /tmp/s.py
-          python3 /tmp/s.py
-
-      - name: Patch Android Files
+      - name: Patch Project Files
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          # ئەم کۆدە بە یەکجار هەموو فایلەکان (MainActivity, strings, Manifest, build.gradle) چاک دەکات
-          echo "aW1wb3J0IG9zLCByZSwgZ2xvYgpwa2cgPSBvcy5lbnZpcm9uWyJQQUNLQUdFX05BTUUiXQpzbHVnID0gb3MuZW52aXJvblsiU1RPUkVfU0xVRyJdCnN0b3JlX3VybCA9IG9zLmVudmlyb25bIlNUT1JFX1VSTCJdCnN0b3JlX25hbWUgPSBvcy5lbnZpcm9uWyJTVE9SRV9OQU1FIl0KcmVwbyA9IG9zLmVudmlyb25bIkdJVEhVQl9SRVBPU0lUT1JZIl0KCmRlZiBwYXRjaChwYXRoLCByZWdleCwgc3ViKToKICAgIGlmIG9zLnBhdGguZXhpc3RzKHBhdGgpOgogICAgICAgIGMgPSBvcGVuKHBhdGgsIGVuY29kaW5nPSJ1dGYtOCIpLnJlYWQoKQogICAgICAgIGMgPSByZS5zdWIocmVnZXgsIHN1YiwgYykKICAgICAgICBvcGVuKHBhdGgsICJ3IiwgZW5jb2Rpbmc9InV0Zi04Iikud3JpdGUoYykKCnBhdGNoKCJidWlsZC5ncmFkbGUuYXBwIiwgcihhcHBsaWNhdGlvbklkXHMvWyInXVsqKVsiJ10pLCBmJ2FwcGxpY2F0aW9uSWQgInhwa2d9IicpCnBhdGNoKCJhcHAvc3JjL21haW4vQW5kcm9pZE1hbmlmZXN0LnhtbCIsIHInKHBhY2thZ2U9KVsiJ11bXiInXSpbIid0JywgZidceDFwYWNrYWdlPSJ7cGtnfSInKQoKbWF0Y2hlcyA9IGdsb2IuZ2xvYigiYXBwL3NyYy9tYWluL2phdmEvKiovTWFpbkFjdGl2aXR5LmphdmEiLCByZWN1cnNpdmU9VHJ1ZSkKaWYgbWF0Y2hlczoKICAgIHAgPSBtYXRjaGVzWzBdCiAgICBwYXRjaChwLCByJ0NPTkZJR19VUkxccyo9XHMqIlteIl0qIicsIGYnQ09ORklHX1VSTCA9ICJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20ve3JlcG99L21haW4vc3RvcmVzL3tzbHVnfS9jb25maWcuanNvbiInKQogICAgcGF0Y2gocCwgcidGQUxMQkFDS19VUkxccyo9XHMqIlteIl0qIicsIGYnRkFMTEJBQ0tfVVJMID0gIntzdG9yZV91cmx9IicpCgpzID0gZCc8cmVzb3VyY2VzPjxzdHJpbmcgbmFtZT0iYXBwX25hbWUiIHRyYW5zbGF0YWJsZT0iZmFsc2UiPntzdG9yZV9uYW1lfTwvc3RyaW5nPjwvcmVzb3VyY2VzPicKb3MubWFrZWRpcnMoImFwcC9zcmMvbWFpbi9yZXMvdmFsdWVzIiwgZXhpc3RfB2s9VHJ1ZSkKb3BlbigiYXBwL3NyYy9tYWluL3Jlcy92YWx1ZXMvc3RyaW5ncy54bWwiLCAidyIpLndyaXRlKHMp" | base64 -d > /tmp/p.py
-          python3 /tmp/p.py
+          python3 -c "
+          import os, re, glob
+          
+          pkg = os.environ['PACKAGE_NAME']
+          slug = os.environ['STORE_SLUG']
+          url = os.environ['STORE_URL']
+          repo = os.environ['GITHUB_REPOSITORY']
+          name = os.environ['STORE_NAME']
+
+          # 1. Patch build.gradle.app
+          path_gradle = 'build.gradle.app'
+          if os.path.exists(path_gradle):
+              c = open(path_gradle).read()
+              c = re.sub(r'applicationId\s+\"[^\"]*\"', f'applicationId \"{pkg}\"', c)
+              open(path_gradle, 'w').write(c)
+              print('Patched build.gradle.app')
+
+          # 2. Patch AndroidManifest.xml
+          path_xml = 'app/src/main/AndroidManifest.xml'
+          if os.path.exists(path_xml):
+              c = open(path_xml).read()
+              c = re.sub(r'package=\"[^\"]*\"', f'package=\"{pkg}\"', c)
+              open(path_xml, 'w').write(c)
+              print('Patched AndroidManifest.xml')
+
+          # 3. Patch MainActivity.java
+          java_files = glob.glob('app/src/main/java/**/MainActivity.java', recursive=True)
+          if java_files:
+              c = open(java_files[0]).read()
+              c = re.sub(r'CONFIG_URL\s*=\s*\"[^\"]*\"', f'CONFIG_URL = \"https://raw.githubusercontent.com/{repo}/main/stores/{slug}/config.json\"', c)
+              c = re.sub(r'FALLBACK_URL\s*=\s*\"[^\"]*\"', f'FALLBACK_URL = \"{url}\"', c)
+              open(java_files[0], 'w').write(c)
+              print('Patched MainActivity.java')
+
+          # 4. Patch strings.xml
+          os.makedirs('app/src/main/res/values', exist_ok=True)
+          with open('app/src/main/res/values/strings.xml', 'w') as f:
+              f.write(f'<resources><string name=\"app_name\" translatable=\"false\">{name}</string></resources>')
+          "
 
       - name: Create Store Config JSON
         run: |
@@ -65,16 +95,15 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Sign APK
+      - name: Sign and Finalize APK
         run: |
           APK_PATH=$(find . -name "*.apk" | grep "release" | head -1)
           if [ ! -f keystore.jks ]; then
             keytool -genkeypair -v -keystore keystore.jks -alias reshop_key -keyalg RSA -keysize 2048 -validity 10000 -storepass reshop2026 -keypass reshop2026 -dname "CN=ReShop, OU=App, O=ReShop, L=Erbil, S=Kurdistan, C=IQ" -noprompt
           fi
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass reshop2026 -keypass reshop2026 "$APK_PATH" reshop_key
-          FINAL_APK="reshop_${{ env.STORE_SLUG }}.apk"
-          cp "$APK_PATH" "$FINAL_APK"
-          echo "FINAL_APK=$FINAL_APK" >> $GITHUB_ENV
+          cp "$APK_PATH" "reshop_${{ env.STORE_SLUG }}.apk"
+          echo "FINAL_APK=reshop_${{ env.STORE_SLUG }}.apk" >> $GITHUB_ENV
 
       - name: Commit Store Config
         run: |
@@ -86,7 +115,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release and Upload APK
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "store-${{ env.STORE_SLUG }}-v1"
