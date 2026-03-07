@@ -55,6 +55,7 @@ jobs:
           path_gradle = 'build.gradle.app'
           if os.path.exists(path_gradle):
               c = open(path_gradle).read()
+              # گۆڕینی applicationId لە ناو فایلەکەدا
               c = re.sub(r'applicationId\s+\"[^\"]*\"', f'applicationId \"{pkg}\"', c)
               open(path_gradle, 'w').write(c)
               print('Patched build.gradle.app')
@@ -90,7 +91,9 @@ jobs:
             > stores/${{ env.STORE_SLUG }}/config.json
 
       - name: Build Release APK
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: |
+          # بەکارهێنانی ئاڵای -b بۆ دیاریکردنی فایلی build.gradle.app بەتایبەتی
+          gradle assembleRelease -b build.gradle.app --no-daemon --stacktrace
 
       - name: Sign and Finalize APK
         run: |
