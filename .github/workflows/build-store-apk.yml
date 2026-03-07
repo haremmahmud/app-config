@@ -41,31 +41,16 @@ jobs:
 
       - name: Download and Prepare Logo
         run: |
-          echo "aW1wb3J0IHJlcXVlc3RzLCBvcwpmcm9tIFBJTCBpbXBvcnQgSW1hZ2UsIEltYWdlRHJhdwppbXBvcnQgaW8KCmxvZ29fdXJsICAgPSBvcy5lbnZpcm9uLmdldCgiTE9HT19VUkwiLCAiIikuc3RyaXAoKQpzdG9yZV9uYW1lID0gb3MuZW52aXJvbi5nZXQoIlNUT1JFX05BTUUiLCAiUmVTaG9wIikKCnNpemVzID0geyJkcmF3YWJsZS1tZHBpIjo0OCwiZHJhd2FibGUtaGRwaSI6NzIsImRyYXdhYmxlLXhoZHBpIjo5NiwiZHJhd2FibGUteHhoZHBpIjoxNDQsImRyYXdhYmxlLXh4eGhkcGkiOjE5Mn0KCmltZyA9IE5vbmUKaWYgbG9nb191cmwgYW5kIGxvZ29fdXJsLnN0YXJ0c3dpdGgoImh0dHAiKToKICAgIHRyeToKICAgICAgICByID0gcmVxdWVzdHMuZ2V0KGxvZ29fdXJsLCB0aW1lb3V0PTE1KQogICAgICAgIGltZyA9IEltYWdlLm9wZW4oaW8uQnl0ZXNJTyhyLmNvbnRlbnQpKS5jb252ZXJ0KCJSR0JBIikKICAgICAgICBwcmludCgiTG9nbyBkb3dubG9hZGVkOiIsIGltZy5zaXplKQogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlLogcHJpbnQoIkxvZ28gZG93bmxvYWQgZmFpbGVkOiIsIGUpCgpiYXNlX3BhdGggPSAiYXBwL3NyYy9tYWluL3JlcyIKZm9yIGZvbGRlciwgc2l6ZSBpbiBzaXplcy5pdGVtcygpOgogICAgb3MubWFrZWRpcnMoZ adventuresnt7YmFzZV9wYXRofS97Zm9sZGVyfSIsIGV4aXN0X29rPVRydWUpCiAgICBvdXRfcGF0aCA9IGZ adventuresnt7YmFzZV9wYXRofS97Zm9sZGVyfS9hcHBfaWNvbi5wbmciCiAgICBpZiBpbWc6CiAgICAgICAgaW1nLnJlc2l6ZSgoc2l6ZSwgc2l6ZSksIEltYWdlLkxBTkNaT1MpLnNhdmUob3V0X3BhdGgsICJQTkciKQogICAgZWxzZToKICAgICAgICBpYyA9IEltYWdlLm5ldygiUkdCQSIsIChzaXplLCBzaXplKSwgKDI1NSwgMTUzLCAwLCAyNTUpKQogICAgICAgIGRyYXcgPSBJbWFnZURyYXcuRHJhdyhpYykKICAgICAgICBsZXR0ZXIgPSBzdG9yZV9uYW1lWzBdLnVwcGVyKCkgaWYgc3RvcmVfbmFtZSBlbHNlICJSIgogICAgICAgIHRyeTogZHJhdy50ZXh0KChzaXplLy8yLCBzaXplLy8yKSwgbGV0dGVyLCBmaWxsPSJ3aGl0ZSIsIGFuY2hvcj0ibW0iKQogICAgICAgIGV4Y2VwdDogZHJhdy50ZXh0KChzaXplLy80LCBzaXplLy80KSwgbGV0dGVyLCBmaWxsPSJ3aGl0ZSIpCiAgICAgICAgaWMuc2F2ZShvdXRfcGF0aCwgIlBORyIpCiAgICBwcmludChmIlNhdmVkIHtvdXRfcGF0aH0gKHtzaXplfXh7c2l6ZX0pIikK" | base64 -d > /tmp/s.py
+          echo "aW1wb3J0IHJlcXVlc3RzLCBvcwpmcm9tIFBJTCBpbXBvcnQgSW1hZ2UsIEltYWdlRHJhdwppbXBvcnQgaW8KCmxvZ29fdXJsID0gb3MuZW52aXJvbi5nZXQoIkxPR09fVVJMIiwgIiIpLnN0cmlwKCkKc3RvcmVfbmFtZSA9IG9zLmVudmlyb24uZ2V0KCJTVE9SRV9OQU1FIiwgIlJlU2hvcCIpCnNpemVzID0geyJkcmF3YWJsZS1tZHBpIjo0OCwiZHJhd2FibGUtaGRwaSI6NzIsImRyYXdhYmxlLXhoZHBpIjo5NiwiZHJhd2FibGUteHhoZHBpIjoxNDQsImRyYXdhYmxlLXh4eGhkcGkiOjE5Mn0KaW1nID0gTm9uZQppZiBsb2dvX3VybCBhbmQgbG9nb191cmwuc3RhcnRzd2l0aCgiaHR0cCIpOgogICAgdHJ5OgogICAgICAgIHIgPSByZXF1ZXN0cy5nZXQobG9nb191cmwsIHRpbWVvdXQ9MTUpCiAgICAgICAgaW1nID0gSW1hZ2Uub3Blbihpby5CeXRlc0lPKHIuY29udGVudCkpLmNvbnZlcnQoIlJHQkEiKQogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOiBwcmludChmIkxvZ28gZG93bmxvYWQgZmFpbGVkOiB7ZX0iKQoKYmFzZV9wYXRoID0gImFwcC9zcmMvbWFpbi9yZXMiCmZvciBmb2xkZXIsIHNpemUgaW4gc2l6ZXMuaXRlbXMoKToKICAgIHBhdGggPSBvcy5wYXRoLmpvaW4oYmFzZV9wYXRoLCBmb2xkZXIpCiAgICBvcy5tYWtlZGlycyhwYXRoLCBleGlzdF9vaz1UcnVlKQogICAgb3V0X3BhdGggPSBvcy5wYXRoLmpvaW4ocGF0aCwgImFwcF9pY29uLnBuZyIpCiAgICBpZiBpbWc6CiAgICAgICAgaW1nLnJlc2l6ZSgoc2l6ZSwgc2l6ZSksIEltYWdl.Resampling.LANCZOS).save(out_pathLSwgIlBORyIpCiAgICBlbHNlOgogICAgICAgIGljID0gSW1hZ2UubmV3KCJSR0JBIiwgKHNpemUsIHNpemUpLCAoMjU1LCAxNTMsIDAsIDI1NSkpCiAgICAgICAgZHJhdyA9IEltYWdlRHJhdwpEcmF3KGljKQogICAgICAgIGxldHRlciA9IHN0b3JlX25hbWVbMF0udXBwZXIoKSBpZiBzdG9yZV9uYW1lIGVsc2UgIlIiCiAgICAgICAgZHJhdy50ZXh0KChzaXplLy8yLCBzaXplLy8yKSwgbGV0dGVyLCBmaWxsPSJ3aGl0ZSIpCiAgICAgICAgaWMuc2F2ZShvdXRfcGF0aCwgIlBORyIp" | base64 -d > /tmp/s.py
           python3 /tmp/s.py
 
-      - name: Patch MainActivity.java
+      - name: Patch Android Files
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          echo "aW1wb3J0IG9zLCByZSwgZ2xvYgoKc2x1ZyAgICAgID0gb3MuZW52aXJvblsiU1RPUkVfU0xVRyJdCnN0b3JlX3VybCA9IG9zLmVudmlyb25bIlNUT1JFX1VSTCJdCnJlcG8gICAgICA9IG9zLmVudmlyb25bIkdJVEhVQl9SRVBPU0lUT1JZIl0KCm1hdGNoZXMgPSBnbG9iLmdsb2IoImFwcC9zcmMvbWFpbi9qYXZhLyoqL01haW5BY3Rpdml0eS5qYXZhIiwgcmVjdXJzaXZlPVRydWUpCmlmIG5vdCBtYXRjaGVzOgogICAgcHJpbnQoIkVSUk9SOiBNYWluQWN0aXZpdHkuamF2YSBub3QgZm91bmQhIikKICAgIGV4aXQoMSkKCmphdmFfcGF0aCA9IG1hdGNoZXNbMF0KcHJpbnQoIkZvdW5kOiIsIGphdmFfcGF0aCkKY29kZSA9IG9wZW4oamF2YV9wYXRoLCBlbmNvZGluZz0idXRmLTgiKS5yZWFkKCkKCmNvZGUgPSByZS5zdWIocidwcml2YXRlIHN0YXRpYyBmaW5hbCBTdHJpbmcgQ09ORklHX1VSTFxzKj1ccyoiW14iXSoiOycsIGYicHJpdmF0ZSBzdGF0aWMgZmluYWwgU3RyaW5nIENPTkZJR19VUkwgPSAiaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3tyZXBvfS9tYWluL3N0b3Jlcy97c2x1Z30vY29uZmlnLmpzb24iOyIsIGNvZGUpCmNvZGUgPSByZS5zdWIocidwcml2YXRlIHN0YXRpYyBmaW5hbCBTdHJpbmcgRkFMTEJBQ0tfVVJMXHMqPVxzKiJbXiJdKiI7JywgZidwcml2YXRlIHN0YXRpYyBmaW5hbCBTdHJpbmcgRkFMTEJBQ0tfVVkwID0gIntzdG9yZV91cmx9IjsiLCBjb2RlKQoKb3BlbihqYXZhX3BhdGgsICJ3IiwgZW5jb2Rpbmc9InV0Zi04Iikud3JpdGUoY29kZSkKcHJpbnQoIlBhdGNoZWQgZm9yIHN0b3JlOiIsIHNsdWcp" | base64 -d > /tmp/s.py
-          python3 /tmp/s.py
-
-      - name: Patch strings.xml
-        run: |
-          echo "aW1wb3J0IG9zCgpzdG9yZV9uYW1lID0gb3MuZW52aXJvblsiU1RPUkVfTkFNRSJdCnNhZmUgPSBzdG9yZV9uYW1lLnJlcGxhY2UoIiYiLCImYW1wOyIpLnJlcGxhY2UoIjwiLCImbHQ7IikucmVwbGFjZSgiPiIsIiZndDsiKS5yZXBsYWNlKCciJywnXFwiJykKeG1sID0gIjxyZXNvdXJjZXM+XG5cdDxzdHJpbmcgbmFtZT1cImFwcF9uYW1lXCIgdHJhbnNsYXRhYmxlPVwiZmFsc2VcIj4iICsgc2FmZSArICI8L3N0cmluZz5cbjwvcmVzb3VyY2VzPlxuIgpvcGVuKCJhcHAvc3JjL21haW4vcmVzL3ZhbHVlcy9zdHJpbmdzLnhtbCIsICJ3IiwgZW5jb2Rpbmc9InV0Zi04Iikud3JpdGUoeG1sKQpwcmludCgiQXBwIG5hbWUgc2V0IHRvOiIsIHN0b3JlX25hbWUp" | base64 -d > /tmp/s.py
-          python3 /tmp/s.py
-
-      - name: Patch AndroidManifest.xml
-        run: |
-          echo "aW1wb3J0IG9zLCByZQpwa2cgPSBvcy5lbnZpcm9uWyJQQUNLQUdFX05BTUUiXQpwYXRoID0gImFwcC9zcmMvbWFpbi9BbmRyb2lkTWFuaWZlc3QueG1sIgpjb2RlID0gb3BlbihwYXRoLCBlbmNvZGluZz0idXRmLTgiKS5yZWFkKCkKY29kZSA9IHJlLnN1YihyJ3BhY2thZ2U9IlteIl0qIicsIGYncGFja2FnZT0ie3BrZ30iJywgY29kZSkKb3BlbihwYXRoLCAidyIsIGVuY29kaW5nPSJ1dGYtOCIpLndyaXRlKGNvZGUpCnByaW50KCJQYWNrYWdlOiIsIHBrZyk=" | base64 -d > /tmp/s.py
-          python3 /tmp/s.py
-
-      - name: Patch build.gradle
-        run: |
-          # لێرەدا ڕێڕەوی فایلەکە گۆڕاوە بۆ build.gradle.app بەپێی فایلەکەی تۆ
-          echo "aW1wb3J0IG9zLCByZQpwa2cgPSBvcy5lbnZpcm9uWyJQQUNLQUdFX05BTUUiXQpwYXRoID0gImJ1aWxkLmdyYWRsZS5hcHAiCmNvZGUgPSBvcGVuKHBhdGgsIGVuY29kaW5nPSJ1dGYtOCIpLnJlYWQoKQpjb2RlID0gcmUuc3ViKHInYXBwbGljYXRpb25JZFxzKyJbXiJdKiInLCBmJ2FwcGxpY2F0aW9uSWQgIntwa2d9IicsIGNvZGUpCm9wZW4ocGF0aCwgInciLCBlbmNvZGluZz0idXRmLTgiKS53cml0ZShjb2RlKQpwcmludChmInBhdGNoZWQ6IHtwYXRofSIp" | base64 -d > /tmp/s.py
-          python3 /tmp/s.py
+          # ئەم کۆدە بە یەکجار هەموو فایلەکان (MainActivity, strings, Manifest, build.gradle) چاک دەکات
+          echo "aW1wb3J0IG9zLCByZSwgZ2xvYgpwa2cgPSBvcy5lbnZpcm9uWyJQQUNLQUdFX05BTUUiXQpzbHVnID0gb3MuZW52aXJvblsiU1RPUkVfU0xVRyJdCnN0b3JlX3VybCA9IG9zLmVudmlyb25bIlNUT1JFX1VSTCJdCnN0b3JlX25hbWUgPSBvcy5lbnZpcm9uWyJTVE9SRV9OQU1FIl0KcmVwbyA9IG9zLmVudmlyb25bIkdJVEhVQl9SRVBPU0lUT1JZIl0KCmRlZiBwYXRjaChwYXRoLCByZWdleCwgc3ViKToKICAgIGlmIG9zLnBhdGguZXhpc3RzKHBhdGgpOgogICAgICAgIGMgPSBvcGVuKHBhdGgsIGVuY29kaW5nPSJ1dGYtOCIpLnJlYWQoKQogICAgICAgIGMgPSByZS5zdWIocmVnZXgsIHN1YiwgYykKICAgICAgICBvcGVuKHBhdGgsICJ3IiwgZW5jb2Rpbmc9InV0Zi04Iikud3JpdGUoYykKCnBhdGNoKCJidWlsZC5ncmFkbGUuYXBwIiwgcihhcHBsaWNhdGlvbklkXHMvWyInXVsqKVsiJ10pLCBmJ2FwcGxpY2F0aW9uSWQgInhwa2d9IicpCnBhdGNoKCJhcHAvc3JjL21haW4vQW5kcm9pZE1hbmlmZXN0LnhtbCIsIHInKHBhY2thZ2U9KVsiJ11bXiInXSpbIid0JywgZidceDFwYWNrYWdlPSJ7cGtnfSInKQoKbWF0Y2hlcyA9IGdsb2IuZ2xvYigiYXBwL3NyYy9tYWluL2phdmEvKiovTWFpbkFjdGl2aXR5LmphdmEiLCByZWN1cnNpdmU9VHJ1ZSkKaWYgbWF0Y2hlczoKICAgIHAgPSBtYXRjaGVzWzBdCiAgICBwYXRjaChwLCByJ0NPTkZJR19VUkxccyo9XHMqIlteIl0qIicsIGYnQ09ORklHX1VSTCA9ICJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20ve3JlcG99L21haW4vc3RvcmVzL3tzbHVnfS9jb25maWcuanNvbiInKQogICAgcGF0Y2gocCwgcidGQUxMQkFDS19VUkxccyo9XHMqIlteIl0qIicsIGYnRkFMTEJBQ0tfVVJMID0gIntzdG9yZV91cmx9IicpCgpzID0gZCc8cmVzb3VyY2VzPjxzdHJpbmcgbmFtZT0iYXBwX25hbWUiIHRyYW5zbGF0YWJsZT0iZmFsc2UiPntzdG9yZV9uYW1lfTwvc3RyaW5nPjwvcmVzb3VyY2VzPicKb3MubWFrZWRpcnMoImFwcC9zcmMvbWFpbi9yZXMvdmFsdWVzIiwgZXhpc3RfB2s9VHJ1ZSkKb3BlbigiYXBwL3NyYy9tYWluL3Jlcy92YWx1ZXMvc3RyaW5ncy54bWwiLCAidyIpLndyaXRlKHMp" | base64 -d > /tmp/p.py
+          python3 /tmp/p.py
 
       - name: Create Store Config JSON
         run: |
@@ -83,7 +68,6 @@ jobs:
       - name: Sign APK
         run: |
           APK_PATH=$(find . -name "*.apk" | grep "release" | head -1)
-          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
           if [ ! -f keystore.jks ]; then
             keytool -genkeypair -v -keystore keystore.jks -alias reshop_key -keyalg RSA -keysize 2048 -validity 10000 -storepass reshop2026 -keypass reshop2026 -dname "CN=ReShop, OU=App, O=ReShop, L=Erbil, S=Kurdistan, C=IQ" -noprompt
           fi
@@ -107,16 +91,6 @@ jobs:
         with:
           tag_name: "store-${{ env.STORE_SLUG }}-v1"
           name: "Store App - ${{ env.STORE_NAME }}"
-          body: "Store: ${{ env.STORE_NAME }} | URL: ${{ env.STORE_URL }} | Package: ${{ env.PACKAGE_NAME }}"
           files: ${{ env.FINAL_APK }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Send APK URL to site
-        env:
-          CALLBACK_URL: ${{ secrets.RESHOP_CALLBACK_URL }}
-          RESHOP_CALLBACK_SECRET: ${{ secrets.RESHOP_CALLBACK_SECRET }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          echo "aW1wb3J0IHJlcXVlc3RzLCBvcwpyZXBvICAgID0gb3MuZW52aXJvblsiR0lUSFVCX1JFUE9TSVRPUlkiXQpzbHVnICAgID0gb3MuZW52aXJvblsiU1RPUkVfU0xVRyJdCnRhZyAgICAgPSBmInN0b3JlLXtzbHVnfS12MSIKYXBrX3VybCA9IGYiaHR0cHM6Ly9naXRodWIuY29tL3tyZXBvfS9yZWxlYXNlcy9kb3dubG9hZC97dGFnfS9yZXNob3Bfe3NsdWd9LmFwayIKY2FsbGJhY2sgPSBvcy5lbnZpcm9uLmdldCgiQ0FMTEJBQ0tfVVJMIiwgIiIpCnNlY3JldCAgID0gb3MuZW52aXJvbi5nZXQoIlJFU0hPUF9DQUxMQkFDS19TRUNSRVQiLCAiIikKaWYgY2FsbGJhY2s6CiAgICB0cnk6CiAgICAgICAgciA9IHJlcXVlc3RzLnBvc3QoY2FsbGJhY2ssIGpzb249eyJzZWNyZXQiOnNlY3JldCwic2x1ZyI6c2x1ZywiYXBrX3VybCI6YXBrX3VybH0sIHRpbWVvdXQ9MTUpCiAgICAgICAgcHJpbnQoIkNhbGxiYWNrOiIsIHIuc3RhdHVzX2NvZGUpCiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgcHJpbnQoIkNhbGxiYWNrIGZhaWxlZDoiLCBlKQplbHNlOgogICAgcHJpbnQoIk5vIGNhbGxiYWNrLiBBUEs6IiwgYXBrX3VybCkK" | base64 -d > /tmp/s.py
-          python3 /tmp/s.py
